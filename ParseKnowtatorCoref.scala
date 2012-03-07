@@ -101,6 +101,12 @@ object ParseKnowtatorCoref {
         val Seq(idAttr) = classMentionElem \ "@id"
         val id = idAttr.text
         val slotIds = (classMentionElem \ "hasSlotMention").map(_ \ "@id" text)
+        if (!idMentionMap.contains(id)) {
+          System.err.printf(
+            "WARNING: ignoring missing '%s' mention: %s\n",
+            classMentionElem \ "mentionClass" \ "@id" text,
+            id)
+        }
         for (mention <- idMentionMap.get(id))
           yield Set(mention) ++ slotIds.flatMap(idSlotMentionsMap).toSet
       }
