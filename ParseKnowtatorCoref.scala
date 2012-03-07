@@ -83,7 +83,7 @@ object ParseKnowtatorCoref {
       }
 
       // map mention IDs to mention objects
-      val idMentionMap = idMentions.flatten.toMap
+      val idMentionMap = idMentionOptions.flatten.toMap
 
       // map slot IDs to the mentions contained in this slot
       val idSlotMentions = for (slotMentionElem <- annotationsElem \ "complexSlotMention") yield {
@@ -94,15 +94,17 @@ object ParseKnowtatorCoref {
       val idSlotMentionsMap = idSlotMentions.toMap
 
       // collect annotated sets of mentions (a single mention may be included in multiple sets)
-      val mentionSets = for {
+      val mentionSetOptions = for {
         classMentionElem <- annotationsElem \ "classMention"
         if !options.exclude.contains(classMentionElem \ "mentionClass" \ "@id" text)
       } yield {
         val Seq(idAttr) = classMentionElem \ "@id"
         val id = idAttr.text
         val slotIds = (classMentionElem \ "hasSlotMention").map(_ \ "@id" text)
-        Set(idMentionMap(id)) ++ slotIds.flatMap(idSlotMentionsMap).toSet
+        for (mention <- idMentionMap.get(id))
+          yield Set(mention) ++ slotIds.flatMap(idSlotMentionsMap).toSet
       }
+      val mentionSets = mentionSetOptions.flatten
 
       // merge sets of mentions so that each mention is included in exactly one set
       val mergedMentionSets = mutable.Set.empty[mutable.Set[Mention]]
