@@ -78,7 +78,10 @@ object ParseKnowtatorCoref {
           System.err.println(annotationElem)
           None
         } else {
-          Some(idAttr.text -> Mention(spans.sorted))
+          // just take the largest span; CoNLL script doesn't understand discontinuous
+          val sortedSpans = spans.sorted
+          val span = sortedSpans.head._1 -> sortedSpans.last._2
+          Some(idAttr.text -> Mention(Seq(span)))
         }
       }
 
