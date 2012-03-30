@@ -16,7 +16,8 @@ shift 2
 spans1file="`basename $dir1`.spans"
 spans2file="`basename $dir2`.spans"
 
-scala $currentdir/ParseKnowtatorCoref.scala $@ $dir1/* > $spans1file
-scala $currentdir/ParseKnowtatorCoref.scala $@ $dir2/* > $spans2file
+# use -nocompdaemon because of https://issues.scala-lang.org/browse/SI-4733
+scala -nocompdaemon $currentdir/ParseKnowtatorCoref.scala $@ $dir1/* > $spans1file
+scala -nocompdaemon $currentdir/ParseKnowtatorCoref.scala $@ $dir2/* > $spans2file
 
 $currentdir/entity_span_agreement.pl $spans1file $spans2file
