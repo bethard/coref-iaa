@@ -67,13 +67,21 @@ object ParseKnowtatorCoref {
 
       // parse the mentions and their spans
       val idMentionOptions = for (annotationElem <- annotationsElem \ "annotation") yield {
-        val Seq(idAttr) = annotationElem \ "mention" \ "@id"
+        val idAttrSeq = annotationElem \ "mention" \ "@id"
         val spans = for (spanElem <- annotationElem \ "span") yield {
           val Seq(startAttr) = spanElem \ "@start"
           val Seq(endAttr) = spanElem \ "@end"
           startAttr.text.toInt -> endAttr.text.toInt
         }
-        if (spans.isEmpty) {
+        if (idAttrSeq.isEmpty) {
+          System.err.println("WARNING: ignoring annotation with no <mention id=...>:")
+          System.err.println(annotationElem)
+          None
+        } else if (idAttrSeq.size > 1) {
+          System.err.println("WARNING: ignoring annotation with many <mention id=...>:")
+          System.err.println(annotationElem)
+          None
+        } else if (spans.isEmpty) {
           System.err.println("WARNING: ignoring span-less annotation:")
           System.err.println(annotationElem)
           None
@@ -81,7 +89,7 @@ object ParseKnowtatorCoref {
           // just take the largest span; CoNLL script doesn't understand discontinuous
           val sortedSpans = spans.sorted
           val span = sortedSpans.head._1 -> sortedSpans.last._2
-          Some(idAttr.text -> Mention(Seq(span)))
+          Some(idAttrSeq.head.text -> Mention(Seq(span)))
         }
       }
 
